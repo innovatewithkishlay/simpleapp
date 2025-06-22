@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Alert,
   Image,
+  SafeAreaView,
   StatusBar,
   StyleSheet,
   Text,
@@ -9,42 +9,85 @@ import {
   View,
 } from "react-native";
 
+const koushikImage = require("./assets/images/koushik.jpeg");
+
 export default function App() {
-  const handleRequest = () => {
-    Alert.alert(
-      "Request Sent!",
-      "Your request for Koushik to teach you DSA has been sent. Fingers crossed!"
-    );
-  };
+  const [response, setResponse] = useState<"pending" | "accepted" | "rejected">(
+    "pending"
+  );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#F8FAFC" />
-      <View style={styles.card}>
-        <Image
-          source={{
-            uri: "https://ui-avatars.com/api/?name=Koushik&background=0D8ABC&color=fff&size=128",
-          }}
-          style={styles.avatar}
-        />
-        <Text style={styles.header}>Request to Koushik</Text>
-        <Text style={styles.body}>Hi Koushik,</Text>
-        <Text style={styles.body}>
-          I truly admire your intelligence and professionalism in Data
-          Structures and Algorithms. Your teaching inspires so many people!
-        </Text>
-        <Text style={styles.body}>
-          Would you please consider teaching me DSA? I am eager to learn from
-          you and believe your guidance will help me grow as a programmer.
-        </Text>
-        <Text style={styles.footer}>Looking forward to your mentorship!</Text>
-        <TouchableOpacity style={styles.button} onPress={handleRequest}>
-          <Text style={styles.buttonText}>Send Request</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+      {response === "pending" ? (
+        <RequestScreen onResponse={setResponse} />
+      ) : response === "accepted" ? (
+        <AcceptedScreen />
+      ) : (
+        <RejectedScreen onAccept={() => setResponse("accepted")} />
+      )}
+    </SafeAreaView>
   );
 }
+
+const RequestScreen = ({
+  onResponse,
+}: {
+  onResponse: (res: "accepted" | "rejected") => void;
+}) => (
+  <View style={styles.card}>
+    <Image source={koushikImage} style={styles.avatar} />
+    <Text style={styles.name}>Koushik</Text>
+    <Text style={styles.description}>
+      You are incredibly talented at Data Structures and Algorithms!{"\n"}
+      Please, would you teach me? I really want to learn from you.
+    </Text>
+    <View style={styles.buttonContainer}>
+      <TouchableOpacity
+        style={[styles.button, styles.primaryButton]}
+        onPress={() => onResponse("accepted")}
+      >
+        <Text style={styles.buttonText}>Please Teach Me 🙏</Text>
+      </TouchableOpacity>
+      <TouchableOpacity
+        style={[styles.button, styles.secondaryButton]}
+        onPress={() => onResponse("rejected")}
+      >
+        <Text style={styles.buttonText}>No, Sorry</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+);
+
+const AcceptedScreen = () => (
+  <View style={styles.card}>
+    <Image source={koushikImage} style={styles.avatar} />
+    <Text style={styles.name}>Yay! Thank You!</Text>
+    <Text style={styles.description}>
+      I'm so happy you'll teach me DSA!{"\n"}
+      Can't wait to start learning from you. 😊
+    </Text>
+    <Text style={styles.emoji}>🎉🤩</Text>
+  </View>
+);
+
+const RejectedScreen = ({ onAccept }: { onAccept: () => void }) => (
+  <View style={styles.card}>
+    <Image source={koushikImage} style={[styles.avatar, { opacity: 0.7 }]} />
+    <Text style={[styles.name, { color: "#555" }]}>Oh no! 😢</Text>
+    <Text style={styles.description}>
+      I'm really eager to learn from you, Koushik.{"\n"}
+      Please reconsider teaching me DSA!
+    </Text>
+    <Text style={styles.emoji}>😭</Text>
+    <TouchableOpacity
+      style={[styles.button, styles.primaryButton]}
+      onPress={onAccept}
+    >
+      <Text style={styles.buttonText}>Okay, I'll Teach You!</Text>
+    </TouchableOpacity>
+  </View>
+);
 
 const styles = StyleSheet.create({
   container: {
@@ -67,45 +110,52 @@ const styles = StyleSheet.create({
     maxWidth: 400,
   },
   avatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     marginBottom: 20,
     borderWidth: 2,
     borderColor: "#0D8ABC",
+    resizeMode: "cover",
   },
-  header: {
+  name: {
     fontSize: 26,
     fontWeight: "bold",
     color: "#0D8ABC",
-    marginBottom: 16,
+    marginBottom: 8,
     textAlign: "center",
   },
-  body: {
-    fontSize: 17,
+  description: {
+    fontSize: 18,
     color: "#333",
     textAlign: "center",
-    marginBottom: 10,
-    lineHeight: 24,
-  },
-  footer: {
-    fontSize: 16,
-    color: "#0D8ABC",
-    fontStyle: "italic",
     marginBottom: 24,
-    textAlign: "center",
+    lineHeight: 26,
+  },
+  buttonContainer: {
+    width: "100%",
+    marginTop: 16,
   },
   button: {
+    paddingVertical: 14,
+    borderRadius: 10,
+    marginBottom: 12,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  primaryButton: {
     backgroundColor: "#0D8ABC",
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 8,
-    marginTop: 12,
+  },
+  secondaryButton: {
+    backgroundColor: "#E1E5E9",
   },
   buttonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
-    letterSpacing: 1,
+  },
+  emoji: {
+    fontSize: 40,
+    marginTop: 20,
   },
 });
