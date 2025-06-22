@@ -64,8 +64,8 @@ const AcceptedScreen = () => (
     <Image source={koushikImage} style={styles.avatar} />
     <Text style={styles.name}>Yay! Thank You!</Text>
     <Text style={styles.description}>
-      I'm so happy you'll teach me DSA!{"\n"}
-      Can't wait to start learning from you. 😊
+      I&apos;m so happy you&apos;ll teach me DSA!{"\n"}
+      Can&apos;t wait to start learning from you. 😊
     </Text>
     <Text style={styles.emoji}>🎉🤩</Text>
   </View>
@@ -76,7 +76,7 @@ const RejectedScreen = ({ onAccept }: { onAccept: () => void }) => (
     <Image source={koushikImage} style={[styles.avatar, { opacity: 0.7 }]} />
     <Text style={[styles.name, { color: "#555" }]}>Oh no! 😢</Text>
     <Text style={styles.description}>
-      I'm really eager to learn from you, Koushik.{"\n"}
+      I&apos;m really eager to learn from you, Koushik.{"\n"}
       Please reconsider teaching me DSA!
     </Text>
     <Text style={styles.emoji}>😭</Text>
@@ -84,7 +84,7 @@ const RejectedScreen = ({ onAccept }: { onAccept: () => void }) => (
       style={[styles.button, styles.primaryButton]}
       onPress={onAccept}
     >
-      <Text style={styles.buttonText}>Okay, I'll Teach You!</Text>
+      <Text style={styles.buttonText}>Okay, I&apos;ll Teach You!</Text>
     </TouchableOpacity>
   </View>
 );
