@@ -8,8 +8,19 @@
     "scheme": "simpleapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "description": "WordWise - Premium Vocabulary and Pronunciation App",
+    "sdkVersion": "52.0.0",
+    "platforms": ["ios", "android", "web"],
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kishlay_012.SimpleApp",
+      "infoPlist": {
+        "NSMicrophoneUsageDescription": "This app uses microphone for voice search",
+        "NSSpeechRecognitionUsageDescription": "This app uses speech recognition for voice search"
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -17,7 +28,9 @@
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
-      "package": "com.kishlay_012.SimpleApp"
+      "package": "com.kishlay_012.SimpleApp",
+      "versionCode": 1,
+      "permissions": ["RECORD_AUDIO"]
     },
     "web": {
       "bundler": "metro",
@@ -41,9 +54,13 @@
           "android": {
             "enableProguardInReleaseBuilds": true,
             "enableShrinkResourcesInReleaseBuilds": true
+          },
+          "ios": {
+            "useFrameworks": "static"
           }
         }
-      ]
+      ],
+      ["expo-font"]
     ],
     "experiments": {
       "typedRoutes": true
