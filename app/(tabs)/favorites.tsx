@@ -12,7 +12,6 @@ import {
   View,
 } from "react-native";
 import { colors, typography } from "../../constants/design";
-
 export default function FavoritesScreen() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,11 +64,11 @@ export default function FavoritesScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <View style={styles.header}>
+      {/* <View style={styles.header}>
         <Text style={styles.headerSubtitle}>
           Your saved words ({favorites.length})
         </Text>
-      </View>
+      </View> */}
 
       {favorites.length === 0 ? (
         <View style={styles.emptyContainer}>
