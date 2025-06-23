@@ -10,7 +10,10 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  SafeAreaView,
+  useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import { colors, typography } from "../../constants/design";
 
 const generateParagraph = async (topic: string) => {
@@ -71,6 +74,8 @@ export default function PronunciationScreen() {
     "Festivals",
     "Friends",
   ];
+
+  const insets = useSafeAreaInsets();
 
   React.useEffect(() => {
     (async () => {
@@ -151,7 +156,13 @@ export default function PronunciationScreen() {
 
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView
+        contentContainerStyle={[
+          styles.container,
+          { paddingBottom: 32 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.header}>
           <MaterialIcons
             name="record-voice-over"
@@ -288,7 +299,6 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 24,
-    paddingBottom: 40,
     backgroundColor: colors.background,
   },
   header: {
