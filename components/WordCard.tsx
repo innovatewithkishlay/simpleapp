@@ -1,9 +1,92 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from "react-native";
 import { colors, typography } from "../constants/design";
 
-const WordCard = ({ wordData, isFavorite, onToggleFavorite }: any) => (
+type WordCardProps = {
+  wordData: {
+    word: string;
+    meaning: string;
+    example: string;
+    synonyms: string[];
+    antonyms: string[];
+    story: string;
+  };
+  isFavorite: boolean;
+  onToggleFavorite: () => void;
+};
+
+const styles = StyleSheet.create({
+  card: {
+    backgroundColor: colors.card,
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 4,
+  } as ViewStyle,
+
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ECF0F1",
+    paddingBottom: 16,
+  } as ViewStyle,
+
+  word: {
+    ...typography.title,
+    color: colors.primary,
+  } as TextStyle,
+
+  section: {
+    marginBottom: 20,
+  } as ViewStyle,
+
+  sectionTitle: {
+    ...typography.subtitle,
+    color: colors.primary,
+    marginBottom: 8,
+  } as TextStyle,
+
+  sectionContent: {
+    ...typography.body,
+    color: colors.text,
+    lineHeight: 24,
+  } as TextStyle,
+
+  example: {
+    fontStyle: "italic",
+    color: colors.secondary,
+  } as TextStyle,
+
+  row: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+  } as ViewStyle,
+
+  column: {
+    width: "48%",
+  } as ViewStyle,
+});
+
+const WordCard = ({
+  wordData,
+  isFavorite,
+  onToggleFavorite,
+}: WordCardProps) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
       <Text style={styles.word}>{wordData.word}</Text>
@@ -49,56 +132,5 @@ const WordCard = ({ wordData, isFavorite, onToggleFavorite }: any) => (
     </View>
   </View>
 );
-
-const styles = StyleSheet.create({
-  card: {
-    backgroundColor: colors.card,
-    borderRadius: 16,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  cardHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ECF0F1",
-    paddingBottom: 16,
-  },
-  word: {
-    ...typography.title,
-    color: colors.primary,
-  },
-  section: {
-    marginBottom: 20,
-  },
-  sectionTitle: {
-    ...typography.subtitle,
-    color: colors.primary,
-    marginBottom: 8,
-  },
-  sectionContent: {
-    ...typography.body,
-    color: colors.text,
-    lineHeight: 24,
-  },
-  example: {
-    fontStyle: "italic",
-    color: colors.secondary,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-  },
-  column: {
-    width: "48%",
-  },
-});
 
 export default WordCard;
