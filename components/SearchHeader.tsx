@@ -1,40 +1,98 @@
 import { Ionicons } from "@expo/vector-icons";
-import React from "react";
+import Voice from "@react-native-voice/voice";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { colors, typography } from "../constants/design";
-const SearchHeader = ({ value, onChange, onSearch }: any) => (
-  <View style={styles.container}>
-    <View style={styles.searchContainer}>
-      <Ionicons
-        name="search"
-        size={20}
-        color={colors.gray}
-        style={styles.icon}
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Search any word..."
-        placeholderTextColor={colors.gray}
-        value={value}
-        onChangeText={onChange}
-        autoCapitalize="none"
-        returnKeyType="search"
-        onSubmitEditing={onSearch}
-      />
-      {value ? (
-        <TouchableOpacity
-          onPress={() => onChange("")}
-          style={styles.closeButton}
-        >
-          <Ionicons name="close" size={20} color={colors.gray} />
-        </TouchableOpacity>
-      ) : null}
+
+const SearchHeader = ({ value, onChange, onSearch }: any) => {
+  const [isListening, setIsListening] = useState(false);
+
+  useEffect(() => {
+    Voice.onSpeechResults = onSpeechResults;
+    Voice.onSpeechError = onSpeechError;
+
+    return () => {
+      Voice.destroy().then(Voice.removeAllListeners);
+    };
+  }, []);
+
+  const onSpeechResults = (event: any) => {
+    if (event.value && event.value.length > 0) {
+      onChange(event.value[0]);
+      onSearch();
+    }
+    setIsListening(false);
+  };
+
+  const onSpeechError = (event: any) => {
+    setIsListening(false);
+  };
+
+  const startListening = async () => {
+    try {
+      setIsListening(true);
+      await Voice.start("en-IN"); // Use Indian English for best results
+    } catch (error) {
+      setIsListening(false);
+    }
+  };
+
+  const stopListening = async () => {
+    try {
+      await Voice.stop();
+      setIsListening(false);
+    } catch (error) {
+      setIsListening(false);
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <Ionicons
+          name="search"
+          size={20}
+          color={colors.gray}
+          style={styles.icon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Search any word..."
+          placeholderTextColor={colors.gray}
+          value={value}
+          onChangeText={onChange}
+          autoCapitalize="none"
+          returnKeyType="search"
+          onSubmitEditing={onSearch}
+        />
+        {value ? (
+          <TouchableOpacity
+            onPress={() => onChange("")}
+            style={styles.closeButton}
+          >
+            <Ionicons name="close" size={20} color={colors.gray} />
+          </TouchableOpacity>
+        ) : null}
+      </View>
+      <TouchableOpacity
+        style={[styles.voiceButton, isListening && styles.voiceButtonActive]}
+        onPress={isListening ? stopListening : startListening}
+        accessibilityLabel={
+          isListening ? "Stop voice input" : "Start voice input"
+        }
+      >
+        <Ionicons
+          name={isListening ? "mic-off" : "mic"}
+          size={24}
+          color={colors.background}
+        />
+      </TouchableOpacity>
+      <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
+        <Ionicons name="arrow-forward" size={24} color={colors.background} />
+      </TouchableOpacity>
     </View>
-    <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
-      <Ionicons name="arrow-forward" size={24} color={colors.background} />
-    </TouchableOpacity>
-  </View>
-);
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -78,6 +136,23 @@ const styles = StyleSheet.create({
     backgroundColor: "#EDF2F7",
     justifyContent: "center",
     alignItems: "center",
+  },
+  voiceButton: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+    backgroundColor: colors.secondary,
+    justifyContent: "center",
+    alignItems: "center",
+    marginRight: 12,
+    shadowColor: colors.secondary,
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  voiceButtonActive: {
+    backgroundColor: "#8E44AD",
   },
   searchButton: {
     width: 56,
