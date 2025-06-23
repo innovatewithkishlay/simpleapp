@@ -1,4 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import React, { useState } from "react";
 import {
   ActivityIndicator,
@@ -16,6 +17,7 @@ export default function ImproveScreen() {
   const [sentence, setSentence] = useState("");
   const [improvedSentence, setImprovedSentence] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [improvementDetails, setImprovementDetails] = useState<string[]>([]);
 
   const handleImprove = async () => {
     if (!sentence.trim()) return;
@@ -24,16 +26,42 @@ export default function ImproveScreen() {
     try {
       const improved = await improveSentence(sentence);
       setImprovedSentence(improved);
+
+      const details: string[] = [];
+      if (
+        /\b(more vivid|richer|advanced|precise|better word|word choice|vocabulary)\b/i.test(
+          improved
+        )
+      )
+        details.push("Vocabulary Enhanced");
+      if (
+        /\b(grammar|tense|agreement|syntax|corrected|fixed|fixed grammar|fixed tense)\b/i.test(
+          improved
+        )
+      )
+        details.push("Grammar Corrected");
+      if (
+        /\b(style|tone|expression|natural|more fluent|more formal|more casual|clarity)\b/i.test(
+          improved
+        )
+      )
+        details.push("Style Improved");
+      if (details.length === 0) details.push("General improvement");
+
+      setImprovementDetails(details);
     } catch (error) {
       console.error("Improvement failed:", error);
       setImprovedSentence("Couldn't improve this sentence. Please try again.");
+      setImprovementDetails(["General improvement"]);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleCopy = () => {
-    // Implement copy to clipboard
+  const handleCopy = async () => {
+    if (improvedSentence) {
+      await Clipboard.setStringAsync(improvedSentence);
+    }
   };
 
   return (
@@ -78,6 +106,38 @@ export default function ImproveScreen() {
               />
             </TouchableOpacity>
           </View>
+
+          <View style={styles.improvementDetails}>
+            <Text style={styles.improvementTitle}>What was improved:</Text>
+            {improvementDetails.map((detail, idx) => (
+              <View key={idx} style={styles.improvementBadge}>
+                <MaterialIcons
+                  name={
+                    detail.includes("Vocabulary")
+                      ? "auto-stories"
+                      : detail.includes("Grammar")
+                      ? "spellcheck"
+                      : detail.includes("Style")
+                      ? "brush"
+                      : "check-circle"
+                  }
+                  size={18}
+                  color={
+                    detail.includes("Vocabulary")
+                      ? colors.secondary
+                      : detail.includes("Grammar")
+                      ? colors.success
+                      : detail.includes("Style")
+                      ? colors.primary
+                      : colors.gray
+                  }
+                  style={{ marginRight: 6 }}
+                />
+                <Text style={styles.improvementBadgeText}>{detail}</Text>
+              </View>
+            ))}
+          </View>
+
           <View style={styles.resultBox}>
             <Text style={styles.resultText}>{improvedSentence}</Text>
           </View>
@@ -91,6 +151,7 @@ const styles = StyleSheet.create({
   container: {
     padding: 24,
     paddingBottom: 40,
+    backgroundColor: colors.background,
   },
   header: {
     flexDirection: "row",
@@ -148,16 +209,39 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.05,
     shadowRadius: 8,
     elevation: 4,
+    marginTop: 8,
   },
   resultHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    marginBottom: 12,
   },
   resultTitle: {
     ...typography.subtitle,
     color: colors.primary,
+  },
+  improvementDetails: {
+    marginBottom: 16,
+  },
+  improvementTitle: {
+    ...typography.subtitle,
+    color: colors.secondary,
+    marginBottom: 8,
+  },
+  improvementBadge: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#F0F4F8",
+    borderRadius: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginBottom: 6,
+    alignSelf: "flex-start",
+  },
+  improvementBadgeText: {
+    ...typography.body,
+    color: colors.text,
   },
   resultBox: {
     backgroundColor: "#F8FAFF",

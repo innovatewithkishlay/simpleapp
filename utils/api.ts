@@ -74,44 +74,49 @@ export const fetchWordData = async (word: string) => {
 };
 
 export const improveSentence = async (sentence: string) => {
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${GROQ_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: ACTIVE_MODEL,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a helpful writing assistant. Return only the improved sentence.",
-          },
-          {
-            role: "user",
-            content: `Rewrite this sentence in more expressive and natural English: "${sentence}"`,
-          },
-        ],
-        temperature: 0.3,
-        max_tokens: 500,
-      }),
-    });
+  const prompt = `
+Rewrite this sentence in more expressive and natural English:
+"${sentence}"
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        `API error: ${errorData.error?.message || response.statusText}`
-      );
-    }
+Return a JSON object with two fields:
+- "improved": the improved sentence
+- "improvements": an array listing what was improved (choose from: "vocabulary", "grammar", "style", "clarity", "conciseness", "tone", "other"). Only include fields that actually changed.
+Do not include any explanation or notes. Only return valid JSON.
+`;
 
-    const data = await response.json();
-    return (
-      data.choices?.[0]?.message?.content || "Couldn't improve this sentence"
-    );
-  } catch (error) {
-    console.error("Improve sentence error:", error);
-    return "Sentence improvement failed";
+  const response = await fetch(API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${GROQ_API_KEY}`,
+    },
+    body: JSON.stringify({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a helpful English writing assistant. Only return valid JSON as instructed.",
+        },
+        { role: "user", content: prompt },
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.3,
+      max_tokens: 200,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.statusText}`);
   }
+
+  const data = await response.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) throw new Error("No response from API");
+
+  const parsed = JSON.parse(content);
+  return {
+    improved: parsed.improved,
+    improvements: parsed.improvements || [],
+  };
 };
