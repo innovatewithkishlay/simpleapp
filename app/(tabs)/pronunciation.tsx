@@ -156,7 +156,7 @@ export default function PronunciationScreen() {
           size={32}
           color={colors.primary}
         />
-        <Text style={styles.title}>Simple Pronunciation Practice</Text>
+        <Text style={styles.title}>Practice Pronunciation</Text>
         <Text style={styles.subtitle}>Practice clear, everyday English</Text>
       </View>
 
