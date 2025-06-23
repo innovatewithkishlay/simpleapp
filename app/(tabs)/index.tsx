@@ -13,7 +13,6 @@ import LoadingShimmer from "../../components/LoadingShimmer";
 import SearchHeader from "../../components/SearchHeader";
 import WordCard from "../../components/WordCard";
 import { fetchWordData } from "../../utils/api";
-
 export default function DictionaryScreen() {
   const [searchTerm, setSearchTerm] = useState("");
   const [wordData, setWordData] = useState<any>(null);
