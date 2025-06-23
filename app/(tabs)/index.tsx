@@ -9,6 +9,7 @@ import {
   Text,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import LoadingShimmer from "../../components/LoadingShimmer";
 import SearchHeader from "../../components/SearchHeader";
 import WordCard from "../../components/WordCard";
@@ -95,49 +96,51 @@ export default function DictionaryScreen() {
   });
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#fff" />
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <View style={styles.container}>
+        <StatusBar barStyle="dark-content" backgroundColor="#fff" />
 
-      <SearchHeader
-        value={searchTerm}
-        onChange={setSearchTerm}
-        onSearch={handleSearch}
-        containerStyle={styles.searchContainer}
-      />
+        <SearchHeader
+          value={searchTerm}
+          onChange={setSearchTerm}
+          onSearch={handleSearch}
+          containerStyle={styles.searchContainer}
+        />
 
-      <ScrollView
-        contentContainerStyle={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        {isLoading ? (
-          <LoadingShimmer />
-        ) : wordData ? (
-          <Animated.View
-            style={[
-              styles.cardAnimation,
-              { transform: [{ scale: cardScale }] },
-            ]}
-          >
-            <WordCard
-              wordData={wordData}
-              isFavorite={isFavorite}
-              onToggleFavorite={toggleFavorite}
-            />
-          </Animated.View>
-        ) : (
-          <View style={styles.placeholder}>
-            <View style={styles.placeholderIcon}>
-              <Text style={styles.icon}>📚</Text>
+        <ScrollView
+          contentContainerStyle={styles.content}
+          showsVerticalScrollIndicator={false}
+        >
+          {isLoading ? (
+            <LoadingShimmer />
+          ) : wordData ? (
+            <Animated.View
+              style={[
+                styles.cardAnimation,
+                { transform: [{ scale: cardScale }] },
+              ]}
+            >
+              <WordCard
+                wordData={wordData}
+                isFavorite={isFavorite}
+                onToggleFavorite={toggleFavorite}
+              />
+            </Animated.View>
+          ) : (
+            <View style={styles.placeholder}>
+              <View style={styles.placeholderIcon}>
+                <Text style={styles.icon}>📚</Text>
+              </View>
+              <Text style={styles.placeholderTitle}>Explore Words</Text>
+              <Text style={styles.placeholderText}>
+                Search any word to discover its definition, usage examples, and
+                pronunciation
+              </Text>
             </View>
-            <Text style={styles.placeholderTitle}>Explore Words</Text>
-            <Text style={styles.placeholderText}>
-              Search any word to discover its definition, usage examples, and
-              pronunciation
-            </Text>
-          </View>
-        )}
-      </ScrollView>
-    </View>
+          )}
+        </ScrollView>
+      </View>
+    </SafeAreaView>
   );
 }
 
