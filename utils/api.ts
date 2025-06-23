@@ -1,8 +1,12 @@
 const GROQ_API_KEY = "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";
 const API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
+const ACTIVE_MODEL = "llama-3.3-70b-versatile";
+
 export const fetchWordData = async (word: string) => {
-  const prompt = `Explain the word "${word}" in simple English. Give 1 simple sentence example, 2 synonyms, 2 antonyms, and 1 mini story (3 lines). Format your response as JSON with these exact keys: meaning, example, synonyms (array), antonyms (array), story.`;
+  const prompt = `Explain the word "${word}" in simple English. 
+  Give 1 simple sentence example, 2 synonyms, 2 antonyms, and 1 mini story (3 lines). 
+  Return response as JSON with keys: meaning, example, synonyms, antonyms, story`;
 
   try {
     const response = await fetch(API_URL, {
@@ -12,61 +16,41 @@ export const fetchWordData = async (word: string) => {
         Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "mixtral-8x7b-32768",
+        model: ACTIVE_MODEL,
         messages: [
           {
             role: "system",
             content:
-              "You are a helpful English vocabulary assistant. Always respond with valid JSON in the exact format requested.",
+              "You are a helpful English word assistant. Return only valid JSON.",
           },
           {
             role: "user",
             content: prompt,
           },
         ],
-        temperature: 0.3,
-        max_tokens: 1000,
         response_format: { type: "json_object" },
+        temperature: 0.3,
+        max_tokens: 800,
       }),
     });
 
-    console.log("Response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("API Error Response:", errorText);
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+      const errorData = await response.json();
+      throw new Error(
+        `API error: ${errorData.error?.message || response.statusText}`
+      );
     }
 
     const data = await response.json();
-    console.log("API Response:", data);
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      console.error("Unexpected API response structure:", data);
-      throw new Error("Invalid API response structure");
-    }
+    const content = data.choices?.[0]?.message?.content;
+    if (!content) throw new Error("Invalid API response structure");
 
-    const content = data.choices[0].message.content;
-    let parsedContent;
-
-    try {
-      parsedContent = JSON.parse(content);
-    } catch (parseError) {
-      console.error("Failed to parse JSON content:", content);
-      // Fallback: create a simple response
-      return {
-        word,
-        meaning: content || `Definition for "${word}" could not be parsed`,
-        example: `Here's an example with "${word}".`,
-        synonyms: ["related", "similar"],
-        antonyms: ["opposite", "different"],
-        story: `Once upon a time, someone used the word "${word}" in a sentence. It was meaningful. The end.`,
-      };
-    }
+    const parsedContent = JSON.parse(content);
 
     return {
       word,
-      meaning: parsedContent.meaning || "No meaning available",
+      meaning: parsedContent.meaning || "No definition available",
       example: parsedContent.example || "No example available",
       synonyms: Array.isArray(parsedContent.synonyms)
         ? parsedContent.synonyms
@@ -78,7 +62,14 @@ export const fetchWordData = async (word: string) => {
     };
   } catch (error) {
     console.error("API Error:", error);
-    throw error;
+    return {
+      word,
+      meaning: `Couldn't fetch definition for "${word}"`,
+      example: `Example using "${word}"`,
+      synonyms: ["synonym1", "synonym2"],
+      antonyms: ["antonym1", "antonym2"],
+      story: `A short story about "${word}"`,
+    };
   }
 };
 
@@ -91,12 +82,12 @@ export const improveSentence = async (sentence: string) => {
         Authorization: `Bearer ${GROQ_API_KEY}`,
       },
       body: JSON.stringify({
-        model: "mixtral-8x7b-32768",
+        model: ACTIVE_MODEL,
         messages: [
           {
             role: "system",
             content:
-              "You are a helpful writing assistant. Rewrite sentences to be more expressive and natural. Return only the improved sentence, nothing else.",
+              "You are a helpful writing assistant. Return only the improved sentence.",
           },
           {
             role: "user",
@@ -108,24 +99,19 @@ export const improveSentence = async (sentence: string) => {
       }),
     });
 
-    console.log("Improve sentence response status:", response.status);
-
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("API Error Response:", errorText);
-      throw new Error(`API request failed: ${response.status} - ${errorText}`);
+      const errorData = await response.json();
+      throw new Error(
+        `API error: ${errorData.error?.message || response.statusText}`
+      );
     }
 
     const data = await response.json();
-    console.log("Improve sentence API Response:", data);
-
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      throw new Error("Invalid API response structure");
-    }
-
-    return data.choices[0].message.content;
+    return (
+      data.choices?.[0]?.message?.content || "Couldn't improve this sentence"
+    );
   } catch (error) {
-    console.error("Improve sentence API Error:", error);
-    throw error;
+    console.error("Improve sentence error:", error);
+    return "Sentence improvement failed";
   }
 };
