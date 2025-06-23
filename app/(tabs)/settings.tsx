@@ -9,14 +9,23 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { colors, typography } from "../../constants/design";
 
 const PROFILE_IMAGE = "https://avatars.githubusercontent.com/u/181485485?v=4";
 const PORTFOLIO_URL = "https://kishlaykumar.onrender.com";
 
 export default function SettingsScreen() {
+  const insets = useSafeAreaInsets();
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView
+      contentContainerStyle={[
+        styles.container,
+        { paddingBottom: 56 + insets.bottom },
+      ]}
+      showsVerticalScrollIndicator={false}
+    >
       <View style={styles.card}>
         <View style={styles.aboutHeader}>
           <Image source={{ uri: PROFILE_IMAGE }} style={styles.avatar} />
@@ -69,7 +78,6 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    paddingBottom: 40,
     backgroundColor: colors.background,
     gap: 24,
   },
