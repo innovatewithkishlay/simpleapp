@@ -157,10 +157,11 @@ export default function PronunciationScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={["top"]}>
       <ScrollView
-        contentContainerStyle={[
-          styles.container,
-          { paddingBottom: 32 + insets.bottom },
-        ]}
+        contentContainerStyle={{
+          padding: 24,
+          paddingBottom: 64 + insets.bottom,
+          backgroundColor: "#F8F9FA",
+        }}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
