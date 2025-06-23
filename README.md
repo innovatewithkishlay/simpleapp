@@ -49,5 +49,3 @@ Distributed under the MIT License. See [LICENSE](LICENSE) for details.
 Submit bugs/features: [Issues](https://github.com/innovatewithkishlay/WordWise/issues)
 
 ---
-
-**Happy learning!** ✨
