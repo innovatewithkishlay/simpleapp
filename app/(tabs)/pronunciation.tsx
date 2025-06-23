@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
 import React, { useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StyleSheet,
   Text,
@@ -14,6 +16,9 @@ export default function PronunciationScreen() {
   const [currentWord, setCurrentWord] = useState("Ephemeral");
   const [phonetic, setPhonetic] = useState("/ɪˈfem.ər.əl/");
   const [isRecording, setIsRecording] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recordedUri, setRecordedUri] = useState<string | null>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [userProgress, setUserProgress] = useState(0);
 
   const words = [
@@ -36,6 +41,16 @@ export default function PronunciationScreen() {
     { word: "Squirrel", phonetic: "/ˈskwɜː.rəl/", meaning: "Small rodent" },
   ];
 
+  React.useEffect(() => {
+    (async () => {
+      await Audio.requestPermissionsAsync();
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+    })();
+  }, []);
+
   const speakWord = () => {
     Speech.speak(currentWord, {
       language: "en-US",
@@ -44,12 +59,47 @@ export default function PronunciationScreen() {
     });
   };
 
-  const handleRecord = () => {
-    setIsRecording(true);
-    setTimeout(() => {
+  const startRecording = async () => {
+    try {
+      setIsRecording(true);
+      const { recording } = await Audio.Recording.createAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      setRecording(recording);
+    } catch (err) {
       setIsRecording(false);
-      setUserProgress((prev) => Math.min(prev + 20, 100));
-    }, 2000);
+      alert("Could not start recording. Please try again.");
+    }
+  };
+
+  const stopRecording = async () => {
+    setIsRecording(false);
+    try {
+      if (recording) {
+        await recording.stopAndUnloadAsync();
+        const uri = recording.getURI();
+        setRecordedUri(uri || null);
+        setUserProgress((prev) => Math.min(prev + 20, 100));
+        setRecording(null);
+      }
+    } catch (err) {
+      alert("Could not stop recording. Please try again.");
+    }
+  };
+
+  const playRecording = async () => {
+    if (!recordedUri) return;
+    setIsPlaying(true);
+    const { sound } = await Audio.Sound.createAsync(
+      { uri: recordedUri },
+      { shouldPlay: true }
+    );
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (!status.isLoaded || status.didJustFinish) {
+        setIsPlaying(false);
+        sound.unloadAsync();
+      }
+    });
   };
 
   const nextWord = () => {
@@ -57,6 +107,8 @@ export default function PronunciationScreen() {
     const nextIndex = (currentIndex + 1) % words.length;
     setCurrentWord(words[nextIndex].word);
     setPhonetic(words[nextIndex].phonetic);
+    setRecordedUri(null);
+    setUserProgress(0);
   };
 
   return (
@@ -83,22 +135,48 @@ export default function PronunciationScreen() {
           <Text style={styles.instructionText}>
             2. Record yourself saying it
           </Text>
-          <Text style={styles.instructionText}>3. Compare and improve</Text>
+          <Text style={styles.instructionText}>
+            3. Listen to your recording and repeat
+          </Text>
         </View>
 
-        <TouchableOpacity
-          style={[styles.recordButton, isRecording && styles.recording]}
-          onPress={handleRecord}
-        >
-          <Ionicons
-            name={isRecording ? "mic" : "mic-outline"}
-            size={28}
-            color="white"
-          />
-          <Text style={styles.buttonText}>
-            {isRecording ? "Recording..." : "Record Your Voice"}
-          </Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: "row", gap: 12, marginTop: 24 }}>
+          <TouchableOpacity
+            style={[
+              styles.recordButton,
+              isRecording && styles.recording,
+              { flex: 1 },
+            ]}
+            onPress={isRecording ? stopRecording : startRecording}
+            disabled={isPlaying}
+          >
+            <Ionicons
+              name={isRecording ? "stop" : "mic"}
+              size={28}
+              color="white"
+            />
+            <Text style={styles.buttonText}>
+              {isRecording ? "Stop Recording" : "Record Your Voice"}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.playUserButton,
+              { flex: 1, opacity: recordedUri ? 1 : 0.5 },
+            ]}
+            onPress={playRecording}
+            disabled={!recordedUri || isPlaying}
+          >
+            {isPlaying ? (
+              <ActivityIndicator color="white" />
+            ) : (
+              <>
+                <Ionicons name="play" size={28} color="white" />
+                <Text style={styles.buttonText}>Play Your Recording</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.progressContainer}>
           <Text style={styles.progressText}>
@@ -188,10 +266,20 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     gap: 12,
-    marginTop: 24,
+    marginTop: 0,
   },
   recording: {
     backgroundColor: "#E74C3C",
+  },
+  playUserButton: {
+    backgroundColor: colors.success,
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+    marginTop: 0,
   },
   buttonText: {
     ...typography.button,
@@ -203,6 +291,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderLeftWidth: 4,
     borderLeftColor: colors.primary,
+    marginTop: 16,
   },
   instructionTitle: {
     ...typography.subtitle,
