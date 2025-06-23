@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, typography } from "../../constants/design";
 
 const generateParagraph = async (topic: string) => {
@@ -149,130 +150,142 @@ export default function PronunciationScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <MaterialIcons
-          name="record-voice-over"
-          size={32}
-          color={colors.primary}
-        />
-        <Text style={styles.title}>Practice Pronunciation</Text>
-        <Text style={styles.subtitle}>Practice clear, everyday English</Text>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <MaterialIcons
+            name="record-voice-over"
+            size={32}
+            color={colors.primary}
+          />
+          <Text style={styles.title}>Practice Pronunciation</Text>
+          <Text style={styles.subtitle}>Practice clear, everyday English</Text>
+        </View>
 
-      <View style={styles.practiceCard}>
-        <View style={styles.paragraphContainer}>
-          <Text style={styles.paragraph}>{currentParagraph}</Text>
-          <View style={styles.pronunciationGuide}>
-            <Ionicons name="megaphone" size={20} color={colors.primary} />
-            <Text style={styles.guideText}>
-              Listen carefully. Speak slowly and clearly. Focus on each word.
-            </Text>
+        <View style={styles.practiceCard}>
+          <View style={styles.paragraphContainer}>
+            <Text style={styles.paragraph}>{currentParagraph}</Text>
+            <View style={styles.pronunciationGuide}>
+              <Ionicons name="megaphone" size={20} color={colors.primary} />
+              <Text style={styles.guideText}>
+                Listen carefully. Speak slowly and clearly. Focus on each word.
+              </Text>
+            </View>
+          </View>
+
+          <View style={styles.controls}>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={
+                isModelSpeaking
+                  ? stopModelReading
+                  : () => playModelReading(false)
+              }
+            >
+              <Ionicons
+                name={isModelSpeaking ? "stop-circle" : "play-circle"}
+                size={32}
+                color={colors.primary}
+              />
+              <Text style={styles.controlText}>
+                {isModelSpeaking ? "Stop" : "Listen"}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.controlButton, { backgroundColor: "#8E44AD" }]}
+              onPress={() => playModelReading(true)}
+              disabled={isModelSpeaking}
+            >
+              <Ionicons name="speedometer" size={28} color="white" />
+              <Text style={[styles.controlText, { color: "white" }]}>Slow</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.controlButton}
+              onPress={isRecording ? stopRecording : startRecording}
+            >
+              <Ionicons
+                name={isRecording ? "stop-circle" : "mic-circle"}
+                size={32}
+                color={colors.secondary}
+              />
+              <Text style={styles.controlText}>
+                {isRecording ? "Stop" : "Record"}
+              </Text>
+            </TouchableOpacity>
+            {recordedUri && (
+              <TouchableOpacity
+                style={styles.controlButton}
+                onPress={playUserRecording}
+                disabled={isPlaying}
+              >
+                {isPlaying ? (
+                  <ActivityIndicator size="small" color={colors.success} />
+                ) : (
+                  <Ionicons
+                    name="play-circle"
+                    size={32}
+                    color={colors.success}
+                  />
+                )}
+                <Text style={styles.controlText}>
+                  {isPlaying ? "Playing" : "Playback"}
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
-        <View style={styles.controls}>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={
-              isModelSpeaking ? stopModelReading : () => playModelReading(false)
-            }
-          >
-            <Ionicons
-              name={isModelSpeaking ? "stop-circle" : "play-circle"}
-              size={32}
-              color={colors.primary}
-            />
-            <Text style={styles.controlText}>
-              {isModelSpeaking ? "Stop" : "Listen"}
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.controlButton, { backgroundColor: "#8E44AD" }]}
-            onPress={() => playModelReading(true)}
-            disabled={isModelSpeaking}
-          >
-            <Ionicons name="speedometer" size={28} color="white" />
-            <Text style={[styles.controlText, { color: "white" }]}>Slow</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.controlButton}
-            onPress={isRecording ? stopRecording : startRecording}
-          >
-            <Ionicons
-              name={isRecording ? "stop-circle" : "mic-circle"}
-              size={32}
-              color={colors.secondary}
-            />
-            <Text style={styles.controlText}>
-              {isRecording ? "Stop" : "Record"}
-            </Text>
-          </TouchableOpacity>
-          {recordedUri && (
-            <TouchableOpacity
-              style={styles.controlButton}
-              onPress={playUserRecording}
-              disabled={isPlaying}
-            >
-              {isPlaying ? (
-                <ActivityIndicator size="small" color={colors.success} />
-              ) : (
-                <Ionicons name="play-circle" size={32} color={colors.success} />
-              )}
-              <Text style={styles.controlText}>
-                {isPlaying ? "Playing" : "Playback"}
-              </Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      </View>
-
-      <View style={styles.topicContainer}>
-        <Text style={styles.sectionTitle}>Practice Topics</Text>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          {topics.map((topic) => (
-            <TouchableOpacity
-              key={topic}
-              style={[
-                styles.topicButton,
-                currentTopic === topic && styles.topicButtonActive,
-              ]}
-              onPress={() => setCurrentTopic(topic)}
-            >
-              <Text
+        <View style={styles.topicContainer}>
+          <Text style={styles.sectionTitle}>Practice Topics</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {topics.map((topic) => (
+              <TouchableOpacity
+                key={topic}
                 style={[
-                  styles.topicText,
-                  currentTopic === topic && styles.topicTextActive,
+                  styles.topicButton,
+                  currentTopic === topic && styles.topicButtonActive,
                 ]}
+                onPress={() => setCurrentTopic(topic)}
               >
-                {topic}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
+                <Text
+                  style={[
+                    styles.topicText,
+                    currentTopic === topic && styles.topicTextActive,
+                  ]}
+                >
+                  {topic}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
 
-      <TouchableOpacity
-        style={styles.generateButton}
-        onPress={generateNewParagraph}
-        disabled={isGenerating}
-      >
-        {isGenerating ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <>
-            <Ionicons name="refresh" size={24} color="white" />
-            <Text style={styles.generateButtonText}>
-              New Practice Paragraph
-            </Text>
-          </>
-        )}
-      </TouchableOpacity>
-    </ScrollView>
+        <TouchableOpacity
+          style={styles.generateButton}
+          onPress={generateNewParagraph}
+          disabled={isGenerating}
+        >
+          {isGenerating ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <>
+              <Ionicons name="refresh" size={24} color="white" />
+              <Text style={styles.generateButtonText}>
+                New Practice Paragraph
+              </Text>
+            </>
+          )}
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     padding: 24,
     paddingBottom: 40,

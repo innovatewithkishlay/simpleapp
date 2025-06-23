@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import Voice from "@react-native-voice/voice";
+import Voice from "@react-native-community/voice";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 import { colors, typography } from "../constants/design";
@@ -21,27 +21,27 @@ const SearchHeader = ({ value, onChange, onSearch }: any) => {
       onChange(event.value[0]);
       onSearch();
     }
-    setIsListening(false);
+    stopListening();
   };
 
   const onSpeechError = (event: any) => {
-    setIsListening(false);
+    stopListening();
   };
 
   const startListening = async () => {
     try {
       setIsListening(true);
-      await Voice.start("en-IN"); // Use Indian English for best results
+      await Voice.start("en-IN");
     } catch (error) {
-      setIsListening(false);
+      stopListening();
     }
   };
 
   const stopListening = async () => {
     try {
       await Voice.stop();
-      setIsListening(false);
     } catch (error) {
+    } finally {
       setIsListening(false);
     }
   };
@@ -77,18 +77,15 @@ const SearchHeader = ({ value, onChange, onSearch }: any) => {
       <TouchableOpacity
         style={[styles.voiceButton, isListening && styles.voiceButtonActive]}
         onPress={isListening ? stopListening : startListening}
-        accessibilityLabel={
-          isListening ? "Stop voice input" : "Start voice input"
-        }
       >
         <Ionicons
           name={isListening ? "mic-off" : "mic"}
           size={24}
-          color={colors.background}
+          color="white"
         />
       </TouchableOpacity>
       <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
-        <Ionicons name="arrow-forward" size={24} color={colors.background} />
+        <Ionicons name="arrow-forward" size={24} color="white" />
       </TouchableOpacity>
     </View>
   );
