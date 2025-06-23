@@ -3,16 +3,20 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Animated,
   FlatList,
+  SafeAreaView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
+import { colors, typography } from "../../constants/design";
 
 export default function FavoritesScreen() {
   const [favorites, setFavorites] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const fadeAnim = useState(new Animated.Value(0))[0];
 
   useEffect(() => {
     const loadFavorites = async () => {
@@ -20,6 +24,12 @@ export default function FavoritesScreen() {
         const savedFavorites = await AsyncStorage.getItem("@favorites");
         if (savedFavorites) {
           setFavorites(JSON.parse(savedFavorites));
+
+          Animated.timing(fadeAnim, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }).start();
         }
       } catch (error) {
         console.error("Error loading favorites:", error);
@@ -46,56 +56,94 @@ export default function FavoritesScreen() {
 
   if (loading) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#4A90E2" />
-      </View>
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Favorites</Text>
+        <Text style={styles.headerSubtitle}>
+          Your saved words ({favorites.length})
+        </Text>
+      </View>
+
       {favorites.length === 0 ? (
         <View style={styles.emptyContainer}>
-          <Ionicons name="book-outline" size={60} color="#BDC3C7" />
-          <Text style={styles.emptyText}>No favorites yet</Text>
-          <Text style={styles.emptySubtext}>
-            Search for words and add them to favorites
+          <View style={styles.emptyIcon}>
+            <Ionicons name="book-outline" size={48} color={colors.secondary} />
+          </View>
+          <Text style={styles.emptyTitle}>No Favorites Yet</Text>
+          <Text style={styles.emptyText}>
+            Search for words and add them to your favorites
           </Text>
         </View>
       ) : (
-        <FlatList
-          data={favorites}
-          keyExtractor={(item) => item.word}
-          contentContainerStyle={styles.listContainer}
-          renderItem={({ item }) => (
-            <View style={styles.favoriteCard}>
-              <Text style={styles.favoriteWord}>{item.word}</Text>
-              <Text style={styles.favoriteMeaning} numberOfLines={2}>
-                {item.meaning}
-              </Text>
-              <TouchableOpacity
-                style={styles.removeButton}
-                onPress={() => removeFavorite(item.word)}
-              >
-                <Ionicons name="trash-outline" size={20} color="#E74C3C" />
-              </TouchableOpacity>
-            </View>
-          )}
-        />
+        <Animated.View style={{ opacity: fadeAnim, flex: 1 }}>
+          <FlatList
+            data={favorites}
+            keyExtractor={(item) => item.word}
+            contentContainerStyle={styles.listContainer}
+            renderItem={({ item }) => (
+              <View style={styles.favoriteCard}>
+                <View style={styles.cardHeader}>
+                  <Text style={styles.favoriteWord}>{item.word}</Text>
+                  <TouchableOpacity
+                    style={styles.removeButton}
+                    onPress={() => removeFavorite(item.word)}
+                  >
+                    <Ionicons name="close" size={24} color={colors.gray} />
+                  </TouchableOpacity>
+                </View>
+                <Text style={styles.favoriteMeaning} numberOfLines={2}>
+                  {item.meaning}
+                </Text>
+                <TouchableOpacity
+                  style={styles.viewButton}
+                  onPress={() => console.log("View word", item.word)}
+                >
+                  <Text style={styles.viewButtonText}>View Details</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+        </Animated.View>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    backgroundColor: "#F8F9FA",
+    backgroundColor: colors.background,
+  },
+  header: {
+    padding: 24,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#EDF2F7",
+  },
+  headerTitle: {
+    ...typography.title,
+    color: colors.primary,
+    fontSize: 24,
+  },
+  headerSubtitle: {
+    ...typography.body,
+    color: colors.gray,
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: colors.background,
   },
   emptyContainer: {
     flex: 1,
@@ -103,47 +151,76 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 40,
   },
-  emptyText: {
-    fontSize: 22,
-    fontWeight: "600",
-    color: "#7F8C8D",
-    marginTop: 20,
+  emptyIcon: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: "#F8FAFF",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 24,
   },
-  emptySubtext: {
-    fontSize: 16,
-    color: "#95A5A6",
-    textAlign: "center",
-    marginTop: 10,
-  },
-  listContainer: {
-    padding: 20,
-  },
-  favoriteCard: {
-    backgroundColor: "#FFF",
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
-    position: "relative",
-  },
-  favoriteWord: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#2C3E50",
+  emptyTitle: {
+    ...typography.subtitle,
+    color: colors.text,
     marginBottom: 8,
   },
+  emptyText: {
+    ...typography.body,
+    color: colors.gray,
+    textAlign: "center",
+    maxWidth: 300,
+  },
+  listContainer: {
+    padding: 24,
+    paddingTop: 16,
+  },
+  favoriteCard: {
+    backgroundColor: colors.card,
+    borderRadius: 20,
+    padding: 24,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: "#EDF2F7",
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  favoriteWord: {
+    ...typography.subtitle,
+    color: colors.primary,
+    fontWeight: "700",
+  },
   favoriteMeaning: {
-    fontSize: 16,
-    color: "#7F8C8D",
-    lineHeight: 22,
+    ...typography.body,
+    color: colors.text,
+    lineHeight: 24,
+    marginBottom: 16,
   },
   removeButton: {
-    position: "absolute",
-    top: 20,
-    right: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: "#F8FAFF",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  viewButton: {
+    backgroundColor: "#E0E7FF",
+    borderRadius: 12,
+    paddingVertical: 10,
+    alignItems: "center",
+  },
+  viewButtonText: {
+    ...typography.button,
+    color: colors.primary,
   },
 });
