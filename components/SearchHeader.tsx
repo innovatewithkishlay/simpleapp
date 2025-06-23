@@ -1,14 +1,14 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import { colors } from "../constants/design";
+import { colors, typography } from "../constants/design";
 
 const SearchHeader = ({ value, onChange, onSearch }: any) => (
   <View style={styles.container}>
     <View style={styles.searchContainer}>
       <Ionicons
         name="search"
-        size={22}
+        size={20}
         color={colors.gray}
         style={styles.icon}
       />
@@ -23,8 +23,11 @@ const SearchHeader = ({ value, onChange, onSearch }: any) => (
         onSubmitEditing={onSearch}
       />
       {value ? (
-        <TouchableOpacity onPress={() => onChange("")}>
-          <Ionicons name="close-circle" size={22} color={colors.gray} />
+        <TouchableOpacity
+          onPress={() => onChange("")}
+          style={styles.closeButton}
+        >
+          <Ionicons name="close" size={20} color={colors.gray} />
         </TouchableOpacity>
       ) : null}
     </View>
@@ -40,44 +43,55 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 16,
     backgroundColor: colors.background,
+    paddingTop: 8,
   },
   searchContainer: {
     flex: 1,
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: colors.card,
-    borderRadius: 12,
+    borderRadius: 16,
     paddingHorizontal: 16,
-    height: 52,
+    height: 56,
     marginRight: 12,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: "#EDF2F7",
   },
   input: {
     flex: 1,
     height: "100%",
-    fontSize: 16,
+    ...typography.body,
     color: colors.text,
     paddingHorizontal: 12,
   },
   icon: {
     marginRight: 8,
   },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#EDF2F7",
+    justifyContent: "center",
+    alignItems: "center",
+  },
   searchButton: {
-    width: 52,
-    height: 52,
-    borderRadius: 12,
+    width: 56,
+    height: 56,
+    borderRadius: 16,
     backgroundColor: colors.primary,
     justifyContent: "center",
     alignItems: "center",
     shadowColor: colors.primary,
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 6 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 12,
+    elevation: 8,
   },
 });
 
