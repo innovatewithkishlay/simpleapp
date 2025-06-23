@@ -39,6 +39,16 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="pronunciation"
+        options={{
+          title: "Pronounciation",
+          tabBarIcon: ({ color }) => (
+            <MaterialIcons name="auto-awesome" size={24} color={color} />
+          ),
+        }}
+      />
+
+      <Tabs.Screen
         name="favorites"
         options={{
           title: "Favorites",
