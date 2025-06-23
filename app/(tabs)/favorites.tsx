@@ -24,7 +24,6 @@ export default function FavoritesScreen() {
         const savedFavorites = await AsyncStorage.getItem("@favorites");
         if (savedFavorites) {
           setFavorites(JSON.parse(savedFavorites));
-
           Animated.timing(fadeAnim, {
             toValue: 1,
             duration: 400,
@@ -67,7 +66,6 @@ export default function FavoritesScreen() {
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Favorites</Text>
         <Text style={styles.headerSubtitle}>
           Your saved words ({favorites.length})
         </Text>
@@ -100,15 +98,9 @@ export default function FavoritesScreen() {
                     <Ionicons name="close" size={24} color={colors.gray} />
                   </TouchableOpacity>
                 </View>
-                <Text style={styles.favoriteMeaning} numberOfLines={2}>
+                <Text style={styles.favoriteMeaning} numberOfLines={3}>
                   {item.meaning}
                 </Text>
-                <TouchableOpacity
-                  style={styles.viewButton}
-                  onPress={() => console.log("View word", item.word)}
-                >
-                  <Text style={styles.viewButtonText}>View Details</Text>
-                </TouchableOpacity>
               </View>
             )}
           />
@@ -203,7 +195,7 @@ const styles = StyleSheet.create({
     ...typography.body,
     color: colors.text,
     lineHeight: 24,
-    marginBottom: 16,
+    marginBottom: 4,
   },
   removeButton: {
     width: 36,
@@ -212,15 +204,5 @@ const styles = StyleSheet.create({
     backgroundColor: "#F8FAFF",
     justifyContent: "center",
     alignItems: "center",
-  },
-  viewButton: {
-    backgroundColor: "#E0E7FF",
-    borderRadius: 12,
-    paddingVertical: 10,
-    alignItems: "center",
-  },
-  viewButtonText: {
-    ...typography.button,
-    color: colors.primary,
   },
 });
