@@ -1,49 +1,42 @@
 import { Ionicons } from "@expo/vector-icons";
 import React from "react";
 import { StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, typography } from "../constants/design";
 const SearchHeader = ({ value, onChange, onSearch }: any) => (
-  <SafeAreaView style={styles.safeArea} edges={["top"]}>
-    <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <Ionicons
-          name="search"
-          size={20}
-          color={colors.gray}
-          style={styles.icon}
-        />
-        <TextInput
-          style={styles.input}
-          placeholder="Search any word..."
-          placeholderTextColor={colors.gray}
-          value={value}
-          onChangeText={onChange}
-          autoCapitalize="none"
-          returnKeyType="search"
-          onSubmitEditing={onSearch}
-        />
-        {value ? (
-          <TouchableOpacity
-            onPress={() => onChange("")}
-            style={styles.closeButton}
-          >
-            <Ionicons name="close" size={20} color={colors.gray} />
-          </TouchableOpacity>
-        ) : null}
-      </View>
-      <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
-        <Ionicons name="arrow-forward" size={24} color={colors.background} />
-      </TouchableOpacity>
+  <View style={styles.container}>
+    <View style={styles.searchContainer}>
+      <Ionicons
+        name="search"
+        size={20}
+        color={colors.gray}
+        style={styles.icon}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Search any word..."
+        placeholderTextColor={colors.gray}
+        value={value}
+        onChangeText={onChange}
+        autoCapitalize="none"
+        returnKeyType="search"
+        onSubmitEditing={onSearch}
+      />
+      {value ? (
+        <TouchableOpacity
+          onPress={() => onChange("")}
+          style={styles.closeButton}
+        >
+          <Ionicons name="close" size={20} color={colors.gray} />
+        </TouchableOpacity>
+      ) : null}
     </View>
-  </SafeAreaView>
+    <TouchableOpacity style={styles.searchButton} onPress={onSearch}>
+      <Ionicons name="arrow-forward" size={24} color={colors.background} />
+    </TouchableOpacity>
+  </View>
 );
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
   container: {
     flexDirection: "row",
     alignItems: "center",

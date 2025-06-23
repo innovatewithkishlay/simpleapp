@@ -9,6 +9,8 @@ import {
   Text,
   View,
 } from "react-native";
+import { colors } from "../../constants/design";
+
 import { SafeAreaView } from "react-native-safe-area-context";
 import LoadingShimmer from "../../components/LoadingShimmer";
 import SearchHeader from "../../components/SearchHeader";
@@ -145,6 +147,10 @@ export default function DictionaryScreen() {
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flex: 1,
     backgroundColor: "#F8F9FA",
