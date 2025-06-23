@@ -1,7 +1,7 @@
 # WordWise 📚
 
 <div align="center">
-  <img src="https://i.imgur.com/7X8Hh0a.png" width="300" alt="WordWise Logo">
+  <img src="../SimpleApp/assets/images/icon.png" width="300" alt="WordWise Logo">
 </div>
 
 WordWise is a premium vocabulary and pronunciation app designed to help students overcome common English learning challenges:
