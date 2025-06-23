@@ -40,6 +40,10 @@ const SearchHeader = ({ value, onChange, onSearch }: any) => (
 );
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     flexDirection: "row",
     alignItems: "center",
