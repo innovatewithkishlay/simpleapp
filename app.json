@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "description": "WordWise - Premium Vocabulary and Pronunciation App",
-    "sdkVersion": "52.0.0",
+    "sdkVersion": "53.0.0",
     "platforms": ["ios", "android", "web"],
     "updates": {
       "fallbackToCacheTimeout": 0

@@ -141,7 +141,6 @@ const styles = StyleSheet.create({
   sectionTitle: {
     ...typography.subtitle,
     color: colors.primary,
-    fontSize: 18,
   },
   sectionContent: {
     ...typography.body,
