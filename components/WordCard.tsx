@@ -35,7 +35,6 @@ const WordCard = ({
         language: "en-US",
         rate: 0.9,
         pitch: 1.1,
-        quality: "Enhanced",
       });
     }
   };
