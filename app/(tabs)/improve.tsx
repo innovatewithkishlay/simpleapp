@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { colors, typography } from "../../constants/design";
 import { improveSentence } from "../../utils/api";
 
@@ -74,85 +75,91 @@ export default function ImproveScreen() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.header}>
-        <MaterialIcons name="auto-awesome" size={28} color={colors.primary} />
-        <Text style={styles.title}>Enhance Your Writing</Text>
-      </View>
+    <SafeAreaView style={styles.safeArea} edges={["top"]}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.header}>
+          <MaterialIcons name="auto-awesome" size={28} color={colors.primary} />
+          <Text style={styles.title}>Enhance Your Writing</Text>
+        </View>
 
-      <Text style={styles.label}>Enter your sentence:</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Type a sentence to improve..."
-        placeholderTextColor={colors.gray}
-        value={sentence}
-        onChangeText={setSentence}
-        multiline
-        numberOfLines={4}
-      />
+        <Text style={styles.label}>Enter your sentence:</Text>
+        <TextInput
+          style={styles.input}
+          placeholder="Type a sentence to improve..."
+          placeholderTextColor={colors.gray}
+          value={sentence}
+          onChangeText={setSentence}
+          multiline
+          numberOfLines={4}
+        />
 
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleImprove}
-        disabled={isLoading}
-      >
-        {isLoading ? (
-          <ActivityIndicator color="white" />
-        ) : (
-          <Text style={styles.buttonText}>Improve Sentence</Text>
-        )}
-      </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={handleImprove}
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <ActivityIndicator color="white" />
+          ) : (
+            <Text style={styles.buttonText}>Improve Sentence</Text>
+          )}
+        </TouchableOpacity>
 
-      {improvedSentence ? (
-        <View style={styles.resultContainer}>
-          <View style={styles.resultHeader}>
-            <Text style={styles.resultTitle}>Enhanced Version</Text>
-            <TouchableOpacity onPress={handleCopy}>
-              <MaterialIcons
-                name="content-copy"
-                size={24}
-                color={colors.primary}
-              />
-            </TouchableOpacity>
-          </View>
+        {improvedSentence ? (
+          <View style={styles.resultContainer}>
+            <View style={styles.resultHeader}>
+              <Text style={styles.resultTitle}>Enhanced Version</Text>
+              <TouchableOpacity onPress={handleCopy}>
+                <MaterialIcons
+                  name="content-copy"
+                  size={24}
+                  color={colors.primary}
+                />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.improvementDetails}>
-            <Text style={styles.improvementTitle}>What was improved:</Text>
-            <View style={styles.badgeContainer}>
-              {improvementDetails.map((detail, idx) => {
-                const label = getImprovementLabel(detail);
-                const { icon, color } = getImprovementMeta(detail);
+            <View style={styles.improvementDetails}>
+              <Text style={styles.improvementTitle}>What was improved:</Text>
+              <View style={styles.badgeContainer}>
+                {improvementDetails.map((detail, idx) => {
+                  const label = getImprovementLabel(detail);
+                  const { icon, color } = getImprovementMeta(detail);
 
-                return (
-                  <View
-                    key={idx}
-                    style={[styles.improvementBadge, { borderColor: color }]}
-                  >
-                    <MaterialIcons
-                      name={icon as any}
-                      size={18}
-                      color={color}
-                      style={{ marginRight: 6 }}
-                    />
-                    <Text style={[styles.improvementBadgeText, { color }]}>
-                      {label}
-                    </Text>
-                  </View>
-                );
-              })}
+                  return (
+                    <View
+                      key={idx}
+                      style={[styles.improvementBadge, { borderColor: color }]}
+                    >
+                      <MaterialIcons
+                        name={icon as any}
+                        size={18}
+                        color={color}
+                        style={{ marginRight: 6 }}
+                      />
+                      <Text style={[styles.improvementBadgeText, { color }]}>
+                        {label}
+                      </Text>
+                    </View>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.resultBox}>
+              <Text style={styles.resultText}>{improvedSentence}</Text>
             </View>
           </View>
-
-          <View style={styles.resultBox}>
-            <Text style={styles.resultText}>{improvedSentence}</Text>
-          </View>
-        </View>
-      ) : null}
-    </ScrollView>
+        ) : null}
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   container: {
     padding: 24,
     paddingBottom: 40,
