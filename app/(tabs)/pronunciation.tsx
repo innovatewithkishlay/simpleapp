@@ -1,10 +1,9 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { Audio } from "expo-av";
 import * as Speech from "expo-speech";
-import React, { useRef, useState } from "react";
+import React, { useState } from "react";
 import {
   ActivityIndicator,
-  Animated,
   ScrollView,
   StyleSheet,
   Text,
@@ -13,7 +12,7 @@ import {
 } from "react-native";
 import { colors, typography } from "../../constants/design";
 
-const generateParagraph = async (topic: string, difficulty: string) => {
+const generateParagraph = async (topic: string) => {
   try {
     const response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -30,51 +29,47 @@ const generateParagraph = async (topic: string, difficulty: string) => {
             {
               role: "system",
               content:
-                "You are a speech coach. Generate clear, well-structured paragraphs for pronunciation practice.",
+                "Generate a paragraph in simple English for Indian students to practice pronunciation. Use common Indian vocabulary and sentence structures. Use short sentences. Do not add any notes, only the paragraph.",
             },
             {
               role: "user",
-              content: `Generate a ${difficulty} level paragraph about ${topic}. Make it 3-4 sentences, perfect for pronunciation practice. Focus on clear articulation and natural flow.`,
+              content: `Create a 3-sentence paragraph about ${topic} using simple Indian English. Focus on clear pronunciation, everyday words, and natural flow.`,
             },
           ],
           temperature: 0.7,
-          max_tokens: 200,
+          max_tokens: 150,
         }),
       }
     );
 
     const data = await response.json();
-    return data.choices[0].message.content;
+    return data.choices[0].message.content.trim();
   } catch (error) {
-    return "Technology has revolutionized the way we communicate and learn. Modern applications help people improve their speaking skills through interactive practice. Clear pronunciation is essential for effective communication in both personal and professional settings.";
+    return "Children go to school every day. They learn reading and writing. Teachers help students understand new things.";
   }
 };
 
 export default function PronunciationScreen() {
   const [currentParagraph, setCurrentParagraph] = useState(
-    "Technology has revolutionized the way we communicate and learn. Modern applications help people improve their speaking skills through interactive practice. Clear pronunciation is essential for effective communication in both personal and professional settings."
+    "Children go to school every day. They learn reading and writing. Teachers help students understand new things."
   );
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isModelSpeaking, setIsModelSpeaking] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [recording, setRecording] = useState<Audio.Recording | null>(null);
   const [recordedUri, setRecordedUri] = useState<string | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTopic, setCurrentTopic] = useState("Technology");
-  const [difficulty, setDifficulty] = useState("Intermediate");
-
+  const [currentTopic, setCurrentTopic] = useState("School");
   const topics = [
-    "Technology",
-    "Health",
-    "Environment",
-    "Education",
-    "Business",
-    "Travel",
-    "Science",
-    "Art",
+    "School",
+    "Morning routine",
+    "Family",
+    "Cricket",
+    "Market",
+    "Rainy day",
+    "Festivals",
+    "Friends",
   ];
-  const difficulties = ["Beginner", "Intermediate", "Advanced"];
-
-  const animationValue = useRef(new Animated.Value(0)).current;
 
   React.useEffect(() => {
     (async () => {
@@ -86,36 +81,19 @@ export default function PronunciationScreen() {
     })();
   }, []);
 
-  const generateNewParagraph = async () => {
-    setIsGenerating(true);
-    Animated.timing(animationValue, {
-      toValue: 1,
-      duration: 300,
-      useNativeDriver: true,
-    }).start();
-
-    try {
-      const newParagraph = await generateParagraph(currentTopic, difficulty);
-      setCurrentParagraph(newParagraph);
-      setRecordedUri(null);
-    } catch (error) {
-      console.error("Failed to generate paragraph:", error);
-    } finally {
-      setIsGenerating(false);
-      Animated.timing(animationValue, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  };
-
-  const playModelReading = () => {
+  const playModelReading = (slow = false) => {
+    setIsModelSpeaking(true);
     Speech.speak(currentParagraph, {
-      language: "en-US",
-      rate: 0.85,
+      language: "en-IN",
+      rate: slow ? 0.5 : 0.75,
       pitch: 1.0,
+      onDone: () => setIsModelSpeaking(false),
+      onStopped: () => setIsModelSpeaking(false),
     });
+  };
+  const stopModelReading = () => {
+    Speech.stop();
+    setIsModelSpeaking(false);
   };
 
   const startRecording = async () => {
@@ -130,7 +108,6 @@ export default function PronunciationScreen() {
       alert("Could not start recording. Please try again.");
     }
   };
-
   const stopRecording = async () => {
     setIsRecording(false);
     try {
@@ -144,7 +121,6 @@ export default function PronunciationScreen() {
       alert("Could not stop recording. Please try again.");
     }
   };
-
   const playUserRecording = async () => {
     if (!recordedUri) return;
     setIsPlaying(true);
@@ -160,6 +136,18 @@ export default function PronunciationScreen() {
     });
   };
 
+  const generateNewParagraph = async () => {
+    setIsGenerating(true);
+    try {
+      const newParagraph = await generateParagraph(currentTopic);
+      setCurrentParagraph(newParagraph);
+      setRecordedUri(null);
+    } catch (error) {
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.header}>
@@ -168,144 +156,118 @@ export default function PronunciationScreen() {
           size={32}
           color={colors.primary}
         />
-        <Text style={styles.title}>Speech Coach</Text>
-        <Text style={styles.subtitle}>Master fluent pronunciation</Text>
+        <Text style={styles.title}>Simple Pronunciation Practice</Text>
+        <Text style={styles.subtitle}>Practice clear, everyday English</Text>
       </View>
 
-      <View style={styles.selectionCard}>
-        <Text style={styles.selectionTitle}>Practice Settings</Text>
-        <View style={styles.selectionRow}>
-          <View style={styles.selectionGroup}>
-            <Text style={styles.selectionLabel}>Topic</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={styles.chipContainer}>
-                {topics.map((topic) => (
-                  <TouchableOpacity
-                    key={topic}
-                    style={[
-                      styles.chip,
-                      currentTopic === topic && styles.chipActive,
-                    ]}
-                    onPress={() => setCurrentTopic(topic)}
-                  >
-                    <Text
-                      style={[
-                        styles.chipText,
-                        currentTopic === topic && styles.chipTextActive,
-                      ]}
-                    >
-                      {topic}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </ScrollView>
+      <View style={styles.practiceCard}>
+        <View style={styles.paragraphContainer}>
+          <Text style={styles.paragraph}>{currentParagraph}</Text>
+          <View style={styles.pronunciationGuide}>
+            <Ionicons name="megaphone" size={20} color={colors.primary} />
+            <Text style={styles.guideText}>
+              Listen carefully. Speak slowly and clearly. Focus on each word.
+            </Text>
           </View>
         </View>
 
-        <View style={styles.difficultyContainer}>
-          {difficulties.map((level) => (
-            <TouchableOpacity
-              key={level}
-              style={[
-                styles.difficultyButton,
-                difficulty === level && styles.difficultyButtonActive,
-              ]}
-              onPress={() => setDifficulty(level)}
-            >
-              <Text
-                style={[
-                  styles.difficultyText,
-                  difficulty === level && styles.difficultyTextActive,
-                ]}
-              >
-                {level}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      </View>
-
-      <Animated.View
-        style={[
-          styles.practiceCard,
-          {
-            opacity: animationValue.interpolate({
-              inputRange: [0, 1],
-              outputRange: [1, 0.7],
-            }),
-          },
-        ]}
-      >
-        <View style={styles.practiceHeader}>
-          <Text style={styles.practiceTitle}>Reading Passage</Text>
+        <View style={styles.controls}>
           <TouchableOpacity
-            style={styles.generateButton}
-            onPress={generateNewParagraph}
-            disabled={isGenerating}
+            style={styles.controlButton}
+            onPress={
+              isModelSpeaking ? stopModelReading : () => playModelReading(false)
+            }
           >
-            {isGenerating ? (
-              <ActivityIndicator color={colors.primary} size="small" />
-            ) : (
-              <MaterialIcons name="refresh" size={24} color={colors.primary} />
-            )}
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.paragraphContainer}>
-          <Text style={styles.paragraph}>{currentParagraph}</Text>
-        </View>
-
-        <View style={styles.actionContainer}>
-          <TouchableOpacity
-            style={styles.modelButton}
-            onPress={playModelReading}
-          >
-            <Ionicons name="volume-high" size={24} color="white" />
-            <Text style={styles.actionButtonText}>Listen to Model</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.recordButton, isRecording && styles.recordingActive]}
-            onPress={isRecording ? stopRecording : startRecording}
-          >
-            <MaterialIcons
-              name={isRecording ? "stop" : "mic"}
-              size={24}
-              color="white"
+            <Ionicons
+              name={isModelSpeaking ? "stop-circle" : "play-circle"}
+              size={32}
+              color={colors.primary}
             />
-            <Text style={styles.actionButtonText}>
-              {isRecording ? "Stop Recording" : "Practice Reading"}
+            <Text style={styles.controlText}>
+              {isModelSpeaking ? "Stop" : "Listen"}
             </Text>
           </TouchableOpacity>
-
+          <TouchableOpacity
+            style={[styles.controlButton, { backgroundColor: "#8E44AD" }]}
+            onPress={() => playModelReading(true)}
+            disabled={isModelSpeaking}
+          >
+            <Ionicons name="speedometer" size={28} color="white" />
+            <Text style={[styles.controlText, { color: "white" }]}>Slow</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.controlButton}
+            onPress={isRecording ? stopRecording : startRecording}
+          >
+            <Ionicons
+              name={isRecording ? "stop-circle" : "mic-circle"}
+              size={32}
+              color={colors.secondary}
+            />
+            <Text style={styles.controlText}>
+              {isRecording ? "Stop" : "Record"}
+            </Text>
+          </TouchableOpacity>
           {recordedUri && (
             <TouchableOpacity
-              style={styles.playbackButton}
+              style={styles.controlButton}
               onPress={playUserRecording}
               disabled={isPlaying}
             >
               {isPlaying ? (
-                <ActivityIndicator color="white" size="small" />
+                <ActivityIndicator size="small" color={colors.success} />
               ) : (
-                <Ionicons name="play" size={24} color="white" />
+                <Ionicons name="play-circle" size={32} color={colors.success} />
               )}
-              <Text style={styles.actionButtonText}>
-                {isPlaying ? "Playing..." : "Hear Your Reading"}
+              <Text style={styles.controlText}>
+                {isPlaying ? "Playing" : "Playback"}
               </Text>
             </TouchableOpacity>
           )}
         </View>
-      </Animated.View>
-
-      {/* Tips */}
-      <View style={styles.tipsCard}>
-        <Ionicons name="bulb" size={20} color={colors.accent} />
-        <Text style={styles.tipsText}>
-          Focus on clear articulation, natural pauses, and smooth flow between
-          words.
-        </Text>
       </View>
+
+      <View style={styles.topicContainer}>
+        <Text style={styles.sectionTitle}>Practice Topics</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+          {topics.map((topic) => (
+            <TouchableOpacity
+              key={topic}
+              style={[
+                styles.topicButton,
+                currentTopic === topic && styles.topicButtonActive,
+              ]}
+              onPress={() => setCurrentTopic(topic)}
+            >
+              <Text
+                style={[
+                  styles.topicText,
+                  currentTopic === topic && styles.topicTextActive,
+                ]}
+              >
+                {topic}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      <TouchableOpacity
+        style={styles.generateButton}
+        onPress={generateNewParagraph}
+        disabled={isGenerating}
+      >
+        {isGenerating ? (
+          <ActivityIndicator color="white" />
+        ) : (
+          <>
+            <Ionicons name="refresh" size={24} color="white" />
+            <Text style={styles.generateButtonText}>
+              New Practice Paragraph
+            </Text>
+          </>
+        )}
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -313,192 +275,123 @@ export default function PronunciationScreen() {
 const styles = StyleSheet.create({
   container: {
     padding: 24,
-    paddingBottom: 100,
+    paddingBottom: 40,
     backgroundColor: colors.background,
   },
   header: {
     alignItems: "center",
-    marginBottom: 32,
+    marginBottom: 24,
   },
   title: {
     ...typography.title,
     color: colors.primary,
-    fontSize: 28,
+    fontSize: 26,
     marginTop: 12,
   },
   subtitle: {
     ...typography.body,
     color: colors.gray,
     marginTop: 4,
+    textAlign: "center",
   },
-  selectionCard: {
+  practiceCard: {
     backgroundColor: colors.card,
-    borderRadius: 20,
+    borderRadius: 24,
     padding: 24,
     marginBottom: 24,
     elevation: 3,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.05,
-    shadowRadius: 8,
-  },
-  selectionTitle: {
-    ...typography.subtitle,
-    color: colors.primary,
-    marginBottom: 16,
-  },
-  selectionRow: {
-    marginBottom: 16,
-  },
-  selectionGroup: {
-    marginBottom: 8,
-  },
-  selectionLabel: {
-    ...typography.body,
-    color: colors.text,
-    marginBottom: 8,
-    fontWeight: "600",
-  },
-  chipContainer: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  chip: {
-    backgroundColor: "#F0F4F8",
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  chipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  chipText: {
-    ...typography.caption,
-    color: colors.text,
-    fontWeight: "500",
-  },
-  chipTextActive: {
-    color: "white",
-  },
-  difficultyContainer: {
-    flexDirection: "row",
-    gap: 8,
-  },
-  difficultyButton: {
-    flex: 1,
-    backgroundColor: "#F0F4F8",
-    borderRadius: 12,
-    paddingVertical: 12,
-    alignItems: "center",
-    borderWidth: 1,
-    borderColor: "#E2E8F0",
-  },
-  difficultyButtonActive: {
-    backgroundColor: colors.secondary,
-    borderColor: colors.secondary,
-  },
-  difficultyText: {
-    ...typography.body,
-    color: colors.text,
-    fontWeight: "600",
-  },
-  difficultyTextActive: {
-    color: "white",
-  },
-  practiceCard: {
-    backgroundColor: colors.card,
-    borderRadius: 24,
-    padding: 28,
-    marginBottom: 24,
-    elevation: 6,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
-  },
-  practiceHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  practiceTitle: {
-    ...typography.subtitle,
-    color: colors.primary,
-  },
-  generateButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#F0F7FF",
-    justifyContent: "center",
-    alignItems: "center",
+    shadowRadius: 12,
   },
   paragraphContainer: {
     backgroundColor: "#F8FAFF",
     borderRadius: 16,
     padding: 20,
     marginBottom: 24,
-    borderLeftWidth: 4,
-    borderLeftColor: colors.primary,
   },
   paragraph: {
     ...typography.body,
     color: colors.text,
     lineHeight: 28,
-    fontSize: 16,
+    fontSize: 18,
+    textAlign: "center",
   },
-  actionContainer: {
-    gap: 12,
+  pronunciationGuide: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginTop: 16,
+    padding: 12,
+    backgroundColor: "#F0F7FF",
+    borderRadius: 12,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.primary,
   },
-  modelButton: {
+  guideText: {
+    ...typography.caption,
+    color: colors.primary,
+    flex: 1,
+  },
+  controls: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginTop: 16,
+    flexWrap: "wrap",
+    gap: 8,
+  },
+  controlButton: {
+    alignItems: "center",
+    padding: 12,
+    borderRadius: 16,
+    backgroundColor: "#F0F4F8",
+    minWidth: 80,
+    marginHorizontal: 4,
+    marginVertical: 4,
+  },
+  controlText: {
+    ...typography.caption,
+    color: colors.text,
+    marginTop: 8,
+  },
+  topicContainer: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    ...typography.subtitle,
+    color: colors.primary,
+    marginBottom: 12,
+  },
+  topicButton: {
+    backgroundColor: "#F0F4F8",
+    borderRadius: 20,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginRight: 12,
+  },
+  topicButtonActive: {
     backgroundColor: colors.primary,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
   },
-  recordButton: {
-    backgroundColor: colors.secondary,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-  },
-  recordingActive: {
-    backgroundColor: "#E74C3C",
-  },
-  playbackButton: {
-    backgroundColor: colors.success,
-    borderRadius: 16,
-    padding: 16,
-    flexDirection: "row",
-    justifyContent: "center",
-    alignItems: "center",
-    gap: 12,
-  },
-  actionButtonText: {
-    ...typography.button,
-    color: "white",
-  },
-  tipsCard: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    backgroundColor: "#FFF9E6",
-    borderRadius: 16,
-    padding: 16,
-  },
-  tipsText: {
+  topicText: {
     ...typography.body,
     color: colors.text,
-    flex: 1,
+  },
+  topicTextActive: {
+    color: "white",
+    fontWeight: "700",
+  },
+  generateButton: {
+    backgroundColor: colors.primary,
+    borderRadius: 16,
+    padding: 18,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+    gap: 12,
+  },
+  generateButtonText: {
+    ...typography.button,
+    color: "white",
   },
 });
