@@ -107,7 +107,7 @@ const WordCard = ({
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Example</Text>
       <Text style={[styles.sectionContent, styles.example]}>
-        "{wordData.example}"
+        {`\u201C${wordData.example}\u201D`}
       </Text>
     </View>
 
